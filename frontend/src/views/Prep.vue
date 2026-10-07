@@ -1,32 +1,43 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { api } from '../api'
+import { api, errText } from '../api'
+import BomNode from '../components/BomNode.vue'
+
 const tree = ref<any[]>([])
 const data = ref<any>(null)
 const shortages = ref<any[]>([])
 const orders = ref<any[]>([])
+const error = ref('')
+
 async function run() {
-  data.value = await api('/prep/run?order_id=1', { method: 'POST' })
+  error.value = ''
   try {
+    data.value = await api('/prep/run?order_id=1', { method: 'POST' })
     const res = await api('/prep/shortages?order_id=1')
     shortages.value = res.shortages || []
-  } catch { shortages.value = [] }
+  } catch (e) {
+    // 生成失败已整次回滚：备料单/缺料贴保持失败前内容。
+    error.value = '生成失败，三套账已退回失败前：' + errText(e)
+  }
 }
+
 onMounted(async () => {
   tree.value = await api('/bom/tree')
   orders.value = await api('/orders')
   await run()
 })
 </script>
+
 <template>
   <h1>备料工作台</h1>
-  <p class="sub">左 BOM 树 · 中备料表 · 右缺料便利贴 · 顶栏订单芯片</p>
+  <p class="sub">左 BOM 树 · 中备料表 · 右缺料便利贴 · 顶栏订单芯片 · 备料单只含叶原料</p>
   <div class="kp-chips" style="margin-bottom:0.75rem" v-if="orders.length">
     <span v-for="o in orders" :key="o.id" class="kp-chip" style="cursor:default">
       {{ o.code }} · {{ o.outlet }}
     </span>
   </div>
   <button class="btn" @click="run">生成备料单</button>
+  <div v-if="error" class="kp-error">{{ error }}</div>
   <div class="kp-workbench" style="margin-top:0.85rem">
     <aside class="kp-bom-tree">
       <h2>菜品 / BOM</h2>
@@ -34,17 +45,18 @@ onMounted(async () => {
         <strong>{{ d.dish }}</strong>
         <span style="font-size:0.7rem;color:#8a8078">{{ d.code }}</span>
         <ul>
-          <li v-for="(c,i) in d.children" :key="i">{{ c.ingredient }} · {{ c.qty }} {{ c.unit }}</li>
+          <BomNode v-for="(c, i) in d.children" :key="i" :node="c" />
         </ul>
       </div>
     </aside>
     <section class="kp-worksheet" v-if="data">
       <h2>备料单 · {{ data.order?.code }} · {{ data.order?.outlet }}</h2>
       <table>
-        <thead><tr><th>原料</th><th>需求</th><th>库存</th><th>单位</th></tr></thead>
+        <thead><tr><th>原料</th><th>需求</th><th>账面</th><th>占用</th><th>可用</th><th>单位</th></tr></thead>
         <tbody>
           <tr v-for="l in data.prep_lines" :key="l.ingredient_id">
-            <td>{{ l.ingredient_name }}</td><td>{{ l.need_qty }}</td><td>{{ l.stock_qty }}</td><td>{{ l.unit }}</td>
+            <td>{{ l.ingredient_name }}</td><td>{{ l.need_qty }}</td><td>{{ l.stock_qty }}</td>
+            <td>{{ l.reserved_qty }}</td><td>{{ l.available_qty }}</td><td>{{ l.unit }}</td>
           </tr>
         </tbody>
       </table>

@@ -169,3 +169,34 @@ th { color: var(--kp-muted); font-weight: 700; font-size: 0.75rem; }
 .stat { font-size: 1.5rem; font-weight: 800; }
 
 .tree ul { list-style: none; padding-left: 1.2rem; margin: 0.25rem 0; }
+
+.kp-semi-tag {
+  display: inline-block; padding: 0 0.35rem; margin-right: 0.25rem;
+  font-size: 0.66rem; font-weight: 700; border-radius: 2px;
+  background: rgba(196,122,44,0.25); color: var(--kp-accent);
+  border: 1px solid rgba(196,122,44,0.5);
+}
+.kp-cycle-tag { color: var(--kp-bad); font-weight: 700; margin-left: 0.3rem; }
+
+.kp-error {
+  background: rgba(179,58,43,0.12); color: var(--kp-bad);
+  border: 2px solid var(--kp-bad); border-radius: 2px;
+  padding: 0.5rem 0.75rem; margin: 0.6rem 0;
+  font-size: 0.85rem; font-weight: 700;
+}
+.kp-ok-banner {
+  background: rgba(47,107,58,0.12); color: var(--kp-ok);
+  border: 2px solid var(--kp-ok); border-radius: 2px;
+  padding: 0.5rem 0.75rem; margin: 0.6rem 0;
+  font-size: 0.85rem; font-weight: 700;
+}
+
+.kp-adjust-form {
+  display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+}
+.kp-adjust-form select, .kp-adjust-form input {
+  padding: 0.4rem 0.5rem; font-size: 0.85rem;
+  border: 1px solid var(--kp-steel); border-radius: 2px;
+  background: #fff; color: var(--kp-ink);
+}
+.kp-adjust-form input[type="number"] { width: 7rem; }
